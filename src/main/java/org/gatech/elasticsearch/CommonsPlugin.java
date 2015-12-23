@@ -22,6 +22,6 @@ public class CommonsPlugin extends Plugin {
   }
 
   public void onModule(SimilarityModule module) {
-    module.addSimilarity(NAME, CustomSimilarityProvider.class);
+    module.addSimilarity("unit-idf", CustomSimilarityProvider.class);
   }
 }
