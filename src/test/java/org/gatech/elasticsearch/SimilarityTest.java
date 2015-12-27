@@ -3,6 +3,7 @@ package org.gatech.elasticsearch;
 import java.io.IOException;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -56,7 +57,8 @@ public class SimilarityTest {
     IndexReader indexReader = DirectoryReader.open(directory);
     IndexSearcher indexSearcher = new IndexSearcher(indexReader);
     indexSearcher.setSimilarity(customSimilarity);
-    QueryParser queryParser = new QueryParser("content", analyzer);
+    
+    QueryParser queryParser = new QueryParser("content", new KeywordAnalyzer());
     Query query = queryParser.parse("humpty dumpty");
     CosineSimilarityQuery cosQuery = new CosineSimilarityQuery(query, "content");
     
@@ -66,6 +68,7 @@ public class SimilarityTest {
       System.out.println(scoreDoc.score + ": " +
           doc.getField("content").stringValue());
     }
+    
   }
 
 }
