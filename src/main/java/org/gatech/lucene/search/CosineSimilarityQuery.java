@@ -77,14 +77,11 @@ public class CosineSimilarityQuery extends CustomScoreQuery {
         BytesRef term;
         while((term = te.next()) != null) {
           if(queryTerms.containsKey(term.utf8ToString())) {
-            qDotD += te.totalTermFreq() * queryTerms.get(term.utf8ToString());
-            d += te.totalTermFreq() * te.totalTermFreq();
+            qDotD += te.totalTermFreq() * queryTerms.get(term.utf8ToString());            
           }
+          d += te.totalTermFreq() * te.totalTermFreq();
         }
         d = (float) Math.sqrt(d);
-        System.out.println(q);
-        System.out.println(d);
-        System.out.println(qDotD);
         return (float) (qDotD/(d*q));
       }
     };

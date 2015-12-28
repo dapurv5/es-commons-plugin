@@ -1,6 +1,8 @@
 package org.gatech.elasticsearch;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -13,11 +15,15 @@ import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
@@ -38,17 +44,17 @@ public class SimilarityTest {
 
     FieldType ftype = new FieldType();
     ftype.setStored(true);
-    ftype.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
-    ftype.tokenized();
+    ftype.setIndexOptions(IndexOptions.DOCS);
+    //ftype.tokenized();
     ftype.setStoreTermVectors(true);
-    ftype.setStoreTermVectorPositions(true);
+    //ftype.setStoreTermVectorPositions(true);
     
     Document doc = new Document();
     Field textField = new Field("content", "", ftype);
 
     //You can re-use the same document
     doc.removeField("content");
-    textField.setStringValue("humpty dumpty sat on a wall, humpty dumpty had a great fall");
+    textField.setStringValue("43491 2724 2949");
     doc.add(textField);
 
     indexWriter.addDocument(doc);
@@ -58,9 +64,15 @@ public class SimilarityTest {
     IndexSearcher indexSearcher = new IndexSearcher(indexReader);
     indexSearcher.setSimilarity(customSimilarity);
     
-    QueryParser queryParser = new QueryParser("content", new KeywordAnalyzer());
-    Query query = queryParser.parse("humpty dumpty");
-    CosineSimilarityQuery cosQuery = new CosineSimilarityQuery(query, "content");
+    List<String> queryTerms = new ArrayList<>();
+    queryTerms.add("2949");
+    queryTerms.add("2724");
+    
+    BooleanQuery.Builder builder = new BooleanQuery.Builder();
+    for(String term : queryTerms) {
+      builder.add(new TermQuery(new Term("content", term)), Occur.SHOULD);
+    }
+    CosineSimilarityQuery cosQuery = new CosineSimilarityQuery(builder.build(), "content");
     
     TopDocs topDocs = indexSearcher.search(cosQuery, 100);
     for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
