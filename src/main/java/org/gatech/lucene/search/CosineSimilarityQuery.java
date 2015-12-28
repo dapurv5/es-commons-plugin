@@ -21,7 +21,6 @@ public class CosineSimilarityQuery extends CustomScoreQuery {
   private BooleanQuery query;
   private final String field;
   private final Map<String, Integer> queryVector;
-  private float queryVectorNorm = 0;
   
   public CosineSimilarityQuery(Query subQuery, String field) {
     super(subQuery);
@@ -50,26 +49,24 @@ public class CosineSimilarityQuery extends CustomScoreQuery {
     return queryVector;
   }
   
-  private float getQueryVectorNorm() {
-    if(queryVectorNorm > 0) {
-      return queryVectorNorm;
-    }
-    assert(queryVector.size() > 0);
-    for(Integer freq: queryVector.values()) {
-      queryVectorNorm = queryVectorNorm + freq*freq;
-    }
-    return (float) Math.sqrt(queryVectorNorm);
-  }
 
   public CustomScoreProvider getCustomScoreProvider(final LeafReaderContext context) {
     return new CustomScoreProvider(context) {
+      
+      private float getQueryVectorNorm(Map<String, Integer> queryTerms) {
+        float queryVectorNorm = 0;
+        for(Integer freq: queryVector.values()) {
+          queryVectorNorm = queryVectorNorm + freq*freq;
+        }
+        return (float) Math.sqrt(queryVectorNorm);
+      }
       
       public float customScore(int doc, float subQueryScore, float valSrcScore)
           throws IOException {
         Map<String, Integer> queryTerms = CosineSimilarityQuery.this.getQueryVector();
         
         float qDotD = 0;
-        float q = CosineSimilarityQuery.this.getQueryVectorNorm();
+        float q = getQueryVectorNorm(queryTerms);
         float d = 0;
                 
         Terms terms = context.reader().getTermVector(doc, field);
@@ -81,6 +78,7 @@ public class CosineSimilarityQuery extends CustomScoreQuery {
           }
           d += te.totalTermFreq() * te.totalTermFreq();
         }
+        
         d = (float) Math.sqrt(d);
         return (float) (qDotD/(d*q));
       }

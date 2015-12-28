@@ -49,20 +49,29 @@ public class SimilarityTest {
     ftype.setStoreTermVectors(true);
     //ftype.setStoreTermVectorPositions(true);
     
-    Document doc = new Document();
-    Field textField = new Field("content", "", ftype);
+    
 
     //You can re-use the same document
+    Document doc = new Document();    
+    Field textField = new Field("content", "", ftype);
     doc.removeField("content");
     textField.setStringValue("43491 2724 2949");
     doc.add(textField);
-
     indexWriter.addDocument(doc);
     indexWriter.commit();
-
+    
+    
+    doc = new Document();    
+    textField = new Field("content", "", ftype);
+    doc.removeField("content");
+    textField.setStringValue("2724 2949");
+    doc.add(textField);    
+    indexWriter.addDocument(doc);
+    indexWriter.commit();    
+    
     IndexReader indexReader = DirectoryReader.open(directory);
     IndexSearcher indexSearcher = new IndexSearcher(indexReader);
-    indexSearcher.setSimilarity(customSimilarity);
+    //indexSearcher.setSimilarity(customSimilarity);
     
     List<String> queryTerms = new ArrayList<>();
     queryTerms.add("2949");

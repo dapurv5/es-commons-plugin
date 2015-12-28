@@ -61,7 +61,6 @@ public class CosineQueryParser implements QueryParser {
       }
     }
     
-    System.out.println(queryTerms);
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
     for(String term : queryTerms) {
       builder.add(new TermQuery(new Term(fieldName, term)), Occur.SHOULD);

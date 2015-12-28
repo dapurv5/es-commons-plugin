@@ -1,2 +1,35 @@
+# es-commons-plugin
+
+Collection of various similarity classes, query types, query parsers on top of
+elasticsearch. 
 
 
+## Installation
+
+
+### Scoring Implementations
+
+#### Unit IDF Similarity Model
+Add the following line to config/elasticsearch.yml
+index.similarity.default.type: unit-idf
+
+
+#### Simple Cosine Similarity Model
+Scores each document by the dot product between the query vector and the document
+vector. An example query is given below
+
+
+```
+{
+ "query": {
+    "cosine_query": {
+      "query": [
+        "5770",
+        "2724"
+      ],
+      "field": "code"
+    }
+  }
+}
+
+```
