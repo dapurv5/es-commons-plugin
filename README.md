@@ -5,7 +5,7 @@ elasticsearch.
 
 
 ## Installation
-
+./bin/plugin install file://es-commons-plugin-1.0-plugin.zip
 
 ### Scoring Implementations
 
