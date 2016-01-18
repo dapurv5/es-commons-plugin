@@ -14,39 +14,42 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.index.query.QueryParseContext;
 import org.elasticsearch.index.query.QueryParser;
 import org.elasticsearch.index.query.QueryParsingException;
-import org.gatech.lucene.search.CosineSimilarityQuery;
+import org.gatech.lucene.search.StoredVectorDotProductQuery;
 
-/**
- * _search POST
- * {
- *   "query": {
- *     "cosine_query": {
- *       "query": [
- *         "5770",
- *         "2724"
- *       ],
- *       "field": "code"
- *     }
- *   }
- * }
- *
+/*
+ _search POST
+ {
+  "query": {
+    "stored_vector_product_query": {
+      "query": [
+        "5770",
+        "2724"
+      ],
+      "field_scoring": "wordvector",
+      "field_retrieval": "code",
+      "dimensionality": "200"
+    }
+  }
+ }
  */
-public class CosineQueryParser implements QueryParser {
+
+public class StoredVectorDotProductQueryParser implements QueryParser {
 
   @Override
   public String[] names() {
-    String name = "cosine_query";
+    String name = "stored_vector_product_query";
     return new String[] {name, Strings.toCamelCase(name)};
   }
 
   @Override
-  public Query parse(QueryParseContext parseContext)
-      throws IOException, QueryParsingException {
-    
+  public Query parse(QueryParseContext parseContext) throws IOException,
+      QueryParsingException {
     XContentParser parser = parseContext.parser();
     String currentFieldName = null;
     List<String> queryTerms = new ArrayList<>();
-    String fieldName = null;
+    String fieldScoring = null;
+    String fieldRetrieval = null;
+    String dim = null;
     
     while(true) {
       XContentParser.Token token;
@@ -70,20 +73,27 @@ public class CosineQueryParser implements QueryParser {
         }
       }
       
-      if("field".equals(currentFieldName)) {
-        fieldName = parser.text();
+      if("field_scoring".equals(currentFieldName)) {
+        fieldScoring = parser.text();
+      }
+      
+      if("field_retrieval".equals(currentFieldName)) {
+        fieldRetrieval = parser.text();
+      }
+      
+      if("dimensionality".equals(currentFieldName)) {
+        dim = parser.text();
       }
     }
     
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
     for(String term : queryTerms) {
-      builder.add(new TermQuery(new Term(fieldName, term)), Occur.SHOULD);
+      builder.add(new TermQuery(new Term(fieldRetrieval, term)), Occur.SHOULD);
     }
     
     Query query = builder.build();
-    CosineSimilarityQuery cosQuery = new CosineSimilarityQuery(query, fieldName);
+    StoredVectorDotProductQuery cosQuery = new StoredVectorDotProductQuery(
+        query, fieldScoring, dim);
     return cosQuery;
   }
-
-
 }

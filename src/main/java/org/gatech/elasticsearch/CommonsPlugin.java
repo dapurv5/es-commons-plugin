@@ -5,6 +5,7 @@ import org.elasticsearch.index.similarity.SimilarityModule;
 import org.elasticsearch.indices.IndicesModule;
 import org.elasticsearch.plugins.Plugin;
 import org.gatech.lucene.queryparser.CosineQueryParser;
+import org.gatech.lucene.queryparser.StoredVectorDotProductQueryParser;
 
 public class CommonsPlugin extends Plugin {
 
@@ -29,5 +30,6 @@ public class CommonsPlugin extends Plugin {
   
   public void onModule(IndicesModule module) {
     module.registerQueryParser(CosineQueryParser.class);
+    module.registerQueryParser(StoredVectorDotProductQueryParser.class);
   }
 }

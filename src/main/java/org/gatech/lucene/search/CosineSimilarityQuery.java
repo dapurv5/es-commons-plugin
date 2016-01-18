@@ -24,7 +24,7 @@ public class CosineSimilarityQuery extends CustomScoreQuery {
   
   public CosineSimilarityQuery(Query subQuery, String field) {
     super(subQuery);
-    this.query = (BooleanQuery) subQuery;    
+    this.query = (BooleanQuery) subQuery;
     this.field = field;
     queryVector = new HashMap<>();
   }
