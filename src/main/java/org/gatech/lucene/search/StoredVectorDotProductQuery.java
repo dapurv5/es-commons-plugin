@@ -1,7 +1,6 @@
 package org.gatech.lucene.search;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -35,7 +34,7 @@ public class StoredVectorDotProductQuery extends CustomScoreQuery {
   private BooleanQuery query;
   private final String fieldScoring;
   private final Map<String, Integer> queryVector;
-  private final String dim;
+  private final int dim;
   
   private final static Logger log = Logger.getLogger(
       StoredVectorDotProductQuery.class);
@@ -50,7 +49,7 @@ public class StoredVectorDotProductQuery extends CustomScoreQuery {
     this.query = (BooleanQuery) subQuery;
     this.fieldScoring = fieldScoring;
     queryVector = new HashMap<>();
-    this.dim = dim;
+    this.dim = Integer.parseInt(dim);
   }
   
   /**
@@ -76,23 +75,38 @@ public class StoredVectorDotProductQuery extends CustomScoreQuery {
   public CustomScoreProvider getCustomScoreProvider(final LeafReaderContext context) {
     return new CustomScoreProvider(context) {
       
+      private float[] getQueryVector(Map<String, Integer> queryTerms, int dim) {
+        float[] queryVector = new float[dim];
+        for(int i = 0; i < queryVector.length; i++) {
+          queryVector[i] = (float) Math.random();
+        }
+        return queryVector;
+      }
+      
+      private float dot(float[] a, float[] b) {
+        //Assert that both have the same length
+        float result = 0;
+        for(int i = 0; i < a.length; i++) {
+          result += a[i] * b[i];
+        }
+        return result;
+      }
+      
       public float customScore(int doc, float subQueryScore, float valSrcScore)
           throws IOException {
         Map<String, Integer> queryTerms = StoredVectorDotProductQuery.this.getQueryVector();
-        
-        float qDotD = 0;
-        float q = 1;
-        float d = 1;
+        int dim = StoredVectorDotProductQuery.this.dim;
         
         Set<String> fieldsToLoad = new HashSet<>();
         fieldsToLoad.add(fieldScoring);
         Document document = context.reader().document(doc, fieldsToLoad);
         String[] values = document.getValues(fieldScoring);
-        System.out.println(Arrays.toString(values));
-
-        //d = (float) Math.sqrt(d);
-        //return (float) (qDotD/(d*q));
-        return 0.5f;//Float.parseFloat(values[0]);
+        float[] docVector = new float[values.length];
+        for(int i = 0; i < values.length; i++) {
+          docVector[i] = Float.parseFloat(values[i]);
+        }
+        float[] queryVector = getQueryVector(queryTerms, dim);
+        return dot(queryVector, docVector);
       }
     };
   }

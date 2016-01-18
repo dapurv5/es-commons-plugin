@@ -33,3 +33,22 @@ vector. An example query is given below
 }
 
 ```
+
+### Stored Vector Dot Product
+Retrieves documents by the field_retrieval and scores them by taking the dot product of query vector with the document vector stored in field_scoring.
+
+```
+{
+  "query": {
+    "stored_vector_product_query": {
+      "query": [
+        "5770",
+        "2724"
+      ],
+      "field_scoring": "wordvector",
+      "field_retrieval": "code",
+      "dimensionality": "200"
+    }
+  }
+}
+```
