@@ -34,7 +34,7 @@ vector. An example query is given below
 
 ```
 
-### Stored Vector Dot Product
+#### Stored Vector Dot Product Scoring Model
 Retrieves documents by the field_retrieval and scores them by taking the dot product of query vector with the document vector stored in field_scoring.
 
 ```
