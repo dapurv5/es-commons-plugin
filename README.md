@@ -27,7 +27,7 @@ vector. An example query is given below
         "5770",
         "2724"
       ],
-      "field": "code"
+      "field": "codes"
     }
   }
 }
@@ -46,7 +46,7 @@ Retrieves documents by the field_retrieval and scores them by taking the dot pro
         "2724"
       ],
       "field_scoring": "wordvector",
-      "field_retrieval": "code",
+      "field_retrieval": "codes",
       "dimensionality": "200"
     }
   }
