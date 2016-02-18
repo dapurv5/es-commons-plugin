@@ -15,9 +15,9 @@
 	</parent>
 
 	<properties>
-		<elasticsearch.version>2.1.0</elasticsearch.version>
+		<elasticsearch.version>2.1.1</elasticsearch.version>
 		<lucene.version>5.3.1</lucene.version>
-		<java.compiler.version>1.8</java.compiler.version>
+		<java.compiler.version>1.7</java.compiler.version>
 	</properties>
 
 	<repositories>
@@ -49,6 +49,18 @@
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
+
+	    <dependency>
+	        <groupId>net.openhft</groupId>
+	        <artifactId>koloboke-api-jdk6-7</artifactId>
+	        <version>0.6.8</version>
+	    </dependency>
+	    <dependency>
+	        <groupId>net.openhft</groupId>
+	        <artifactId>koloboke-impl-jdk6-7</artifactId>
+	        <version>0.6.8</version>
+	        <scope>runtime</scope>
+	    </dependency>		
 	</dependencies>
 
 	<build>
@@ -219,6 +231,32 @@
 					</execution>
 				</executions>
 			</plugin>
+
+	     <plugin>
+	       <groupId>org.apache.maven.plugins</groupId>
+	       <artifactId>maven-shade-plugin</artifactId>
+	       <version>2.4.1</version>
+	       <executions>
+	         <execution>
+	           <phase>package</phase>
+	           <goals>
+	             <goal>shade</goal>
+	           </goals>
+	           <configuration>
+	             <relocations>
+	               <relocation>
+	                 <pattern>org.joda</pattern>
+	                 <shadedPattern>my.elasticsearch.joda</shadedPattern>
+	               </relocation>
+	             </relocations>
+	             <transformers>
+	               <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
+	             </transformers>
+	           </configuration>
+	         </execution>
+	       </executions>
+	     </plugin>			
+			
 		</plugins>
 	</build>
 

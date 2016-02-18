@@ -3,6 +3,9 @@
 Collection of various similarity classes, query types, query parsers on top of
 elasticsearch. 
 
+## Starting elasticsearch
+export ES_HEAP_SIZE=4g
+./bin/elasticsearch -Dsecurity.manager.enabled=false
 
 ## Installation
 ./bin/plugin install file://es-commons-plugin-1.0-plugin.zip

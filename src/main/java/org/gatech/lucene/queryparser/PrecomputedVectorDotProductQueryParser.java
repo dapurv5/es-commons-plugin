@@ -14,7 +14,7 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.index.query.QueryParseContext;
 import org.elasticsearch.index.query.QueryParser;
 import org.elasticsearch.index.query.QueryParsingException;
-import org.gatech.lucene.search.StoredVectorDotProductQuery;
+import org.gatech.lucene.search.PrecomputedVectorDotProductQuery;
 
 /*
  _search POST
@@ -24,24 +24,22 @@ import org.gatech.lucene.search.StoredVectorDotProductQuery;
     "codes"
   ],
   "query": {
-    "stored_vector_product_query": {
+    "precomputed_vector_product_query": {
       "query": [
         "5770",
         "2724"
       ],
-      "field_scoring": "embedding",
       "field_retrieval": "codes",
-      "dimensionality": "200"
     }
   }
  }
  */
 
-public class StoredVectorDotProductQueryParser implements QueryParser {
+public class PrecomputedVectorDotProductQueryParser implements QueryParser {
 
   @Override
   public String[] names() {
-    String name = "stored_vector_product_query";
+    String name = "precomputed_vector_product_query";
     return new String[] {name, Strings.toCamelCase(name)};
   }
 
@@ -53,7 +51,6 @@ public class StoredVectorDotProductQueryParser implements QueryParser {
     List<String> queryTerms = new ArrayList<>();
     String fieldScoring = null;
     String fieldRetrieval = null;
-    String dim = null;
     
     while(true) {
       XContentParser.Token token;
@@ -77,16 +74,8 @@ public class StoredVectorDotProductQueryParser implements QueryParser {
         }
       }
       
-      if("field_scoring".equals(currentFieldName)) {
-        fieldScoring = parser.text();
-      }
-      
       if("field_retrieval".equals(currentFieldName)) {
         fieldRetrieval = parser.text();
-      }
-      
-      if("dimensionality".equals(currentFieldName)) {
-        dim = parser.text();
       }
     }
     
@@ -96,8 +85,8 @@ public class StoredVectorDotProductQueryParser implements QueryParser {
     }
     
     Query query = builder.build();
-    StoredVectorDotProductQuery cosQuery = new StoredVectorDotProductQuery(
-        query, fieldScoring, dim);
+    PrecomputedVectorDotProductQuery cosQuery = new PrecomputedVectorDotProductQuery(
+        query, fieldRetrieval);
     return cosQuery;
   }
 }

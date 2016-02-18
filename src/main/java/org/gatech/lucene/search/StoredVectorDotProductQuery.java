@@ -15,6 +15,7 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.gatech.lucene.search.store.DotProductStore;
 
 /**
  * Computes the score for a query by taking a dot product of the
@@ -58,7 +59,7 @@ public class StoredVectorDotProductQuery extends CustomScoreQuery {
   private Map<String, Integer> getQueryVector() throws IOException {
     if(queryVector.size() > 0) {
       return queryVector;
-    }
+    }    
     
     //Collect the terms from the query
     for(BooleanClause clause : query.clauses()) {
@@ -97,6 +98,8 @@ public class StoredVectorDotProductQuery extends CustomScoreQuery {
         Map<String, Integer> queryTerms = StoredVectorDotProductQuery.this.getQueryVector();
         int dim = StoredVectorDotProductQuery.this.dim;
         
+        DotProductStore dps = DotProductStore.newInstance();
+
         Set<String> fieldsToLoad = new HashSet<>();
         fieldsToLoad.add(fieldScoring);
         Document document = context.reader().document(doc, fieldsToLoad);

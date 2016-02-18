@@ -1,11 +1,15 @@
 package org.gatech.elasticsearch;
 
+import java.io.IOException;
+
 import org.elasticsearch.index.similarity.CustomSimilarityProvider;
 import org.elasticsearch.index.similarity.SimilarityModule;
 import org.elasticsearch.indices.IndicesModule;
 import org.elasticsearch.plugins.Plugin;
 import org.gatech.lucene.queryparser.CosineQueryParser;
+import org.gatech.lucene.queryparser.PrecomputedVectorDotProductQueryParser;
 import org.gatech.lucene.queryparser.StoredVectorDotProductQueryParser;
+import org.gatech.lucene.search.store.DotProductStore;
 
 public class CommonsPlugin extends Plugin {
 
@@ -28,8 +32,12 @@ public class CommonsPlugin extends Plugin {
     module.addSimilarity("unit-idf", CustomSimilarityProvider.class);
   }
   
-  public void onModule(IndicesModule module) {
+  public void onModule(IndicesModule module) throws IOException {
     module.registerQueryParser(CosineQueryParser.class);
     module.registerQueryParser(StoredVectorDotProductQueryParser.class);
+    module.registerQueryParser(PrecomputedVectorDotProductQueryParser.class);
+    
+    //Load data in memory
+    DotProductStore.newInstance();
   }
 }
