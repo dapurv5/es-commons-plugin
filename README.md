@@ -55,3 +55,25 @@ Retrieves documents by the field_retrieval and scores them by taking the dot pro
   }
 }
 ```
+
+
+
+#### Precomputed vector dot product query
+```
+{
+  "fields": [
+    "pid",
+    "codes"
+  ],
+  "query": {
+    "precomputed_vector_product_query": {
+      "query": [
+        "5770",
+        "2724"
+      ],
+      "field_retrieval": "codes",
+    }
+  }
+}
+
+```
