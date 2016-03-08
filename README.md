@@ -23,44 +23,45 @@ vector. An example query is given below
 
 
 ```
-{
- "query": {
-    "cosine_query": {
-      "query": [
-        "5770",
-        "2724"
-      ],
-      "field": "codes"
+  {
+    "query": {
+      "cosine_query": {
+        "query": [
+          "5770",
+          "2724"
+        ],
+        "field": "codes"
+      }
     }
   }
-}
-
 ```
 
 #### Stored Vector Dot Product Scoring Model
 Retrieves documents by the field_retrieval and scores them by taking the dot product of query vector with the document vector stored in field_scoring.
 
 ```
-{
+fields": [
+    "pid",
+    "codes"
+  ],
   "query": {
     "stored_vector_product_query": {
       "query": [
         "5770",
         "2724"
       ],
-      "field_scoring": "wordvector",
+      "field_scoring": "embedding",
       "field_retrieval": "codes",
-      "dimensionality": "200"
+      "field_magnitude": "magnitude"
     }
   }
-}
+ }`
+
 ```
-
-
 
 #### Precomputed vector dot product query
 ```
-{
+ {
   "fields": [
     "pid",
     "codes"
@@ -71,9 +72,11 @@ Retrieves documents by the field_retrieval and scores them by taking the dot pro
         "5770",
         "2724"
       ],
+      "field_scoring": "embedding",
       "field_retrieval": "codes",
+      "field_magnitude": "magnitude"
     }
   }
-}
+ }
 
 ```

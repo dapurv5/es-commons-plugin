@@ -31,7 +31,7 @@ import org.gatech.lucene.search.StoredVectorDotProductQuery;
       ],
       "field_scoring": "embedding",
       "field_retrieval": "codes",
-      "dimensionality": "200"
+      "field_magnitude": "magnitude"
     }
   }
  }
@@ -53,6 +53,7 @@ public class StoredVectorDotProductQueryParser implements QueryParser {
     List<String> queryTerms = new ArrayList<>();
     String fieldScoring = null;
     String fieldRetrieval = null;
+    String fieldMagn = null;
     String dim = null;
     
     while(true) {
@@ -85,8 +86,8 @@ public class StoredVectorDotProductQueryParser implements QueryParser {
         fieldRetrieval = parser.text();
       }
       
-      if("dimensionality".equals(currentFieldName)) {
-        dim = parser.text();
+      if("field_magnitude".equals(currentFieldName)) {
+        fieldMagn = parser.text();
       }
     }
     
@@ -97,7 +98,7 @@ public class StoredVectorDotProductQueryParser implements QueryParser {
     
     Query query = builder.build();
     StoredVectorDotProductQuery cosQuery = new StoredVectorDotProductQuery(
-        query, fieldScoring, dim);
+        query, fieldScoring, fieldMagn);
     return cosQuery;
   }
 }

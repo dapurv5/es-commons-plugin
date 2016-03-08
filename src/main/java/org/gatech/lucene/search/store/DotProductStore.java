@@ -17,26 +17,15 @@ import net.openhft.koloboke.collect.map.hash.HashIntFloatMaps;
 public class DotProductStore {
   
   private static DotProductStore instance = null;
-  private Map<String, Integer> codeMap = new HashMap<>();
   private Map<Integer, Float> productMap = HashIntFloatMaps.newMutableMap();
+  private CodeIndexStore codeIndexStore = CodeIndexStore.newInstance();
   
   //TODO: Remove hard-coded values
-  private String codesFile = "/nethome/averma80/output/patient_data/gen_codes/codes.txt";
-  private String productsFile = "/nethome/averma80/output/patient_data/gen_code_products/products.txt";
+  //private String productsFile = "/nethome/averma80/output/patient_data/gen_code_products/products.txt";
+  private String productsFile = "/mnt/production/cdc/gen_code_products/products.txt";
   
   private DotProductStore() throws IOException {
-    FileInputStream codesStream = new FileInputStream(new File(codesFile));
     FileInputStream productsStream = new FileInputStream(new File(productsFile));
-    
-    BufferedReader codesReader = new BufferedReader(new InputStreamReader(codesStream));
-    String code = null;
-    int counter = 0;
-    while((code = codesReader.readLine()) != null) {
-      if(!codeMap.containsKey(code)) {
-        codeMap.put(code, counter);
-        counter += 1;
-      }
-    }
     
     BufferedReader productsReader = new BufferedReader(new InputStreamReader(productsStream));
     String line = null;
@@ -65,8 +54,8 @@ public class DotProductStore {
    * code2
    */
   public float getProduct(String code1, String code2) {
-    int c1 = codeMap.get(code1);
-    int c2 = codeMap.get(code2);
+    int c1 = codeIndexStore.getIndexForCode(code1);
+    int c2 = codeIndexStore.getIndexForCode(code2);
     return productMap.get(cantorPairing(c1, c2));
   }
   

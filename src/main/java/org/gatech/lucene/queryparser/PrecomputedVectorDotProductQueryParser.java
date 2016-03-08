@@ -29,7 +29,9 @@ import org.gatech.lucene.search.PrecomputedVectorDotProductQuery;
         "5770",
         "2724"
       ],
+      "field_scoring": "embedding",
       "field_retrieval": "codes",
+      "field_magnitude": "magnitude"
     }
   }
  }
@@ -51,6 +53,7 @@ public class PrecomputedVectorDotProductQueryParser implements QueryParser {
     List<String> queryTerms = new ArrayList<>();
     String fieldScoring = null;
     String fieldRetrieval = null;
+    String fieldMagn = null;
     
     while(true) {
       XContentParser.Token token;
@@ -77,6 +80,14 @@ public class PrecomputedVectorDotProductQueryParser implements QueryParser {
       if("field_retrieval".equals(currentFieldName)) {
         fieldRetrieval = parser.text();
       }
+      
+      if("field_magnitude".equals(currentFieldName)) {
+        fieldMagn = parser.text();
+      }
+      
+      if("field_scoring".equals(currentFieldName)) {
+        fieldScoring = parser.text();
+      }
     }
     
     BooleanQuery.Builder builder = new BooleanQuery.Builder();
@@ -86,7 +97,7 @@ public class PrecomputedVectorDotProductQueryParser implements QueryParser {
     
     Query query = builder.build();
     PrecomputedVectorDotProductQuery cosQuery = new PrecomputedVectorDotProductQuery(
-        query, fieldRetrieval);
+        query, fieldRetrieval, fieldScoring, fieldMagn);
     return cosQuery;
   }
 }

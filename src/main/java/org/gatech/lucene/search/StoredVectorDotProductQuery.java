@@ -15,7 +15,9 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.gatech.lucene.search.store.CodeEmbeddingStore;
 import org.gatech.lucene.search.store.DotProductStore;
+import org.gatech.lucene.search.util.VectorUtil;
 
 /**
  * Computes the score for a query by taking a dot product of the
@@ -34,8 +36,11 @@ public class StoredVectorDotProductQuery extends CustomScoreQuery {
 
   private BooleanQuery query;
   private final String fieldScoring;
-  private final Map<String, Integer> queryVector;
-  private final int dim;
+  private final String fieldMagn;
+  
+  
+  private float[] queryEmbedding;
+  private float queryEmbeddingMagn = -1;
   
   private final static Logger log = Logger.getLogger(
       StoredVectorDotProductQuery.class);
@@ -43,73 +48,67 @@ public class StoredVectorDotProductQuery extends CustomScoreQuery {
   /**
    * @param subQuery: the query issued
    * @param fieldScoring: the field from which the stored vector has to be read
-   * @param dim: the dimensionality of the vector to be constructed
    */
-  public StoredVectorDotProductQuery(Query subQuery, String fieldScoring, String dim) {
+  public StoredVectorDotProductQuery(Query subQuery, String fieldScoring, String fieldMagn) {
     super(subQuery); //this retrieves documents
     this.query = (BooleanQuery) subQuery;
     this.fieldScoring = fieldScoring;
-    queryVector = new HashMap<>();
-    this.dim = Integer.parseInt(dim);
+    this.fieldMagn = fieldMagn;
   }
   
   /**
-   * Returns the query vector as a map.
+   * Returns the query embedding as a float vector.
    */
-  private Map<String, Integer> getQueryVector() throws IOException {
-    if(queryVector.size() > 0) {
-      return queryVector;
-    }    
+  private float[] getQueryEmbedding() throws IOException {
+    if(queryEmbedding != null) {
+      return queryEmbedding;
+    }
     
+    CodeEmbeddingStore embStore = CodeEmbeddingStore.newInstance();
+    queryEmbedding = VectorUtil.zeros(embStore.getDimensionality());
+    
+    int cnt = 0;
     //Collect the terms from the query
     for(BooleanClause clause : query.clauses()) {
       TermQuery termQuery = (TermQuery) clause.getQuery();
       String term = termQuery.getTerm().text();
-      if(!queryVector.containsKey(term)) {
-        queryVector.put(term, 0);
-      }
-      queryVector.put(term, queryVector.get(term) + 1); //increment count by 1
+      float[] emb = embStore.getEmbedding(term);
+      VectorUtil.aggregateSum(queryEmbedding, emb);
+      cnt++;
     }
-    return queryVector;
+    VectorUtil.divide(queryEmbedding, cnt);
+    this.queryEmbeddingMagn = VectorUtil.magn(queryEmbedding);
+    return queryEmbedding;
+  }
+  
+  
+  private float getQueryEmbeddingMagn() {
+    return this.queryEmbeddingMagn;
   }
 
   public CustomScoreProvider getCustomScoreProvider(final LeafReaderContext context) {
     return new CustomScoreProvider(context) {
       
-      private float[] getQueryVector(Map<String, Integer> queryTerms, int dim) {
-        float[] queryVector = new float[dim];
-        for(int i = 0; i < queryVector.length; i++) {
-          queryVector[i] = (float) Math.random();
-        }
-        return queryVector;
-      }
-      
-      private float dot(float[] a, float[] b) {
-        //Assert that both have the same length
-        float result = 0;
-        for(int i = 0; i < a.length; i++) {
-          result += a[i] * b[i];
-        }
-        return result;
-      }
-      
       public float customScore(int doc, float subQueryScore, float valSrcScore)
           throws IOException {
-        Map<String, Integer> queryTerms = StoredVectorDotProductQuery.this.getQueryVector();
-        int dim = StoredVectorDotProductQuery.this.dim;
+        float[] queryEmbedding = StoredVectorDotProductQuery.this.getQueryEmbedding();
+        float queryEmbeddingMagn = StoredVectorDotProductQuery.this.getQueryEmbeddingMagn();
         
         DotProductStore dps = DotProductStore.newInstance();
 
         Set<String> fieldsToLoad = new HashSet<>();
         fieldsToLoad.add(fieldScoring);
+        fieldsToLoad.add(fieldMagn);
         Document document = context.reader().document(doc, fieldsToLoad);
+
+        //fieldScoring scores the document vector
         String[] values = document.getValues(fieldScoring);
-        float[] docVector = new float[values.length];
+        float[] docEmbedding = new float[values.length];
         for(int i = 0; i < values.length; i++) {
-          docVector[i] = Float.parseFloat(values[i]);
+          docEmbedding[i] = Float.parseFloat(values[i]);
         }
-        float[] queryVector = getQueryVector(queryTerms, dim);
-        return dot(queryVector, docVector);
+        float docEmbeddingMagn = Float.parseFloat(document.get(fieldMagn));
+        return VectorUtil.dot(queryEmbedding, docEmbedding)/(queryEmbeddingMagn * docEmbeddingMagn);
       }
     };
   }

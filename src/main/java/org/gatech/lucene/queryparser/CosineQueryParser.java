@@ -16,20 +16,20 @@ import org.elasticsearch.index.query.QueryParser;
 import org.elasticsearch.index.query.QueryParsingException;
 import org.gatech.lucene.search.CosineSimilarityQuery;
 
-/**
- * _search POST
- * {
- *   "query": {
- *     "cosine_query": {
- *       "query": [
- *         "5770",
- *         "2724"
- *       ],
- *       "field": "code"
- *     }
- *   }
- * }
- *
+/*
+  _search POST
+  {
+    "query": {
+      "cosine_query": {
+        "query": [
+          "5770",
+          "2724"
+        ],
+        "field": "codes"
+      }
+    }
+  }
+ 
  */
 public class CosineQueryParser implements QueryParser {
 
